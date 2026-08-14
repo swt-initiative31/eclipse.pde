@@ -1845,6 +1845,7 @@ public class BaseApiAnalyzer implements IApiAnalyzer {
 	 * numbering problems
 	 */
 	private void processDelta(final IDelta delta, final IApiComponent reference, final IApiComponent component) {
+
 		if (delta.getComponentVersionId() != null && !delta.getComponentId().equals(component.getSymbolicName())) {
 			return;
 		}

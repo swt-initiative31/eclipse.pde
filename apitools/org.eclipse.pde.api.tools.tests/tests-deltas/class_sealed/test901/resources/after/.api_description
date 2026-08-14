@@ -2,7 +2,4 @@
 <component name="deltatest">
 <plugin id="deltatest" />
 
-<package name="">
-	<type name="X" extend="false"/>
-</package>
 </component>

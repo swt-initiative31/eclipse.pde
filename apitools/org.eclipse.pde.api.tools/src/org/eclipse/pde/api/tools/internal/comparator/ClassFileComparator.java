@@ -133,6 +133,15 @@ public class ClassFileComparator {
 		this.apiBaseline1 = apiState;
 		this.apiBaseline2 = apiState2;
 		this.visibilityModifiers = visibilityModifiers;
+		if (this.type2 != null && this.type2.getName().contains("GC") && !this.type2.getName().contains("GCData")) { //$NON-NLS-1$ //$NON-NLS-2$
+			org.eclipse.pde.api.tools.internal.provisional.model.IApiField[] fields1 = this.type1 == null ? new org.eclipse.pde.api.tools.internal.provisional.model.IApiField[0] : this.type1.getFields();
+			org.eclipse.pde.api.tools.internal.provisional.model.IApiField[] fields2 = this.type2.getFields();
+			System.out.println("[ClassFileComparator] constructor: type1=" + (this.type1 == null ? "null" : this.type1.getName()) //$NON-NLS-1$ //$NON-NLS-2$
+					+ " type1.location=" + classFile.getTypeName() + " component=" + component.getSymbolicName()); //$NON-NLS-1$ //$NON-NLS-2$
+			System.out.println("  type1.fields=" + java.util.Arrays.stream(fields1).map(f -> f.getName()).collect(java.util.stream.Collectors.joining(", "))); //$NON-NLS-1$ //$NON-NLS-2$
+			System.out.println("  type2=" + this.type2.getName() + " type2.location=" + classFile2.getTypeName() + " component2=" + component2.getSymbolicName()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			System.out.println("  type2.fields=" + java.util.Arrays.stream(fields2).map(f -> f.getName()).collect(java.util.stream.Collectors.joining(", "))); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/**
@@ -156,6 +165,15 @@ public class ClassFileComparator {
 		this.apiBaseline1 = apiState;
 		this.apiBaseline2 = apiState2;
 		this.visibilityModifiers = visibilityModifiers;
+		if (this.type2 != null && this.type2.getName().contains("GC") && !this.type2.getName().contains("GCData")) { //$NON-NLS-1$ //$NON-NLS-2$
+			org.eclipse.pde.api.tools.internal.provisional.model.IApiField[] fields1 = this.type1 == null ? new org.eclipse.pde.api.tools.internal.provisional.model.IApiField[0] : this.type1.getFields();
+			org.eclipse.pde.api.tools.internal.provisional.model.IApiField[] fields2 = this.type2.getFields();
+			System.out.println("[ClassFileComparator] constructor(IApiType): type1=" + (this.type1 == null ? "null" : this.type1.getName()) //$NON-NLS-1$ //$NON-NLS-2$
+					+ " component=" + component.getSymbolicName()); //$NON-NLS-1$
+			System.out.println("  type1.fields=" + java.util.Arrays.stream(fields1).map(f -> f.getName()).collect(java.util.stream.Collectors.joining(", "))); //$NON-NLS-1$ //$NON-NLS-2$
+			System.out.println("  type2=" + this.type2.getName() + " type2.location=" + classFile2.getTypeName() + " component2=" + component2.getSymbolicName()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			System.out.println("  type2.fields=" + java.util.Arrays.stream(fields2).map(f -> f.getName()).collect(java.util.stream.Collectors.joining(", "))); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	private void addDelta(IDelta delta) {
@@ -990,6 +1008,11 @@ public class ClassFileComparator {
 			IApiAnnotations elementDescription2 = component2ApiDescription.resolveAnnotations(this.type2.getHandle());
 			this.initialDescriptorRestrictions = RestrictionModifiers.NO_RESTRICTIONS;
 			this.currentDescriptorRestrictions = RestrictionModifiers.NO_RESTRICTIONS;
+			if (this.type2.getName().contains("GC")) { //$NON-NLS-1$
+				System.out.println("[ClassFileComparator] getDelta for type=" + this.type2.getName() //$NON-NLS-1$
+						+ " elementDescription2=" + (elementDescription2 == null ? "null (→ currentDescriptorRestrictions stays NO_RESTRICTIONS!)" //$NON-NLS-1$ //$NON-NLS-2$
+								: "restrictions=0x" + Integer.toHexString(elementDescription2.getRestrictions()))); //$NON-NLS-1$
+			}
 			if (elementDescription2 != null) {
 				int restrictions2 = elementDescription2.getRestrictions();
 				IApiDescription apiDescription = this.component.getApiDescription();
@@ -1243,8 +1266,16 @@ public class ClassFileComparator {
 				if (!Flags.isFinal(typeAccess2)) {
 					// report delta - changed from final to non-final
 					this.addDelta(getElementType(this.type1), IDelta.CHANGED, IDelta.FINAL_TO_NON_FINAL, this.currentDescriptorRestrictions, typeAccess, typeAccess2, this.type1, this.type1.getName(), Util.getDescriptorName(type1));
+
+				} else if (Flags.isSealed(typeAccess2)) {
+					this.addDelta(getElementType(this.type1), IDelta.CHANGED, IDelta.FINAL_TO_NON_FINAL,
+							this.currentDescriptorRestrictions, typeAccess, typeAccess2, this.type1,
+							this.type1.getName(), Util.getDescriptorName(type1));
 				}
-			} else if (Flags.isFinal(typeAccess2)) {
+
+			}
+
+			else if (Flags.isFinal(typeAccess2)) {
 				// report delta - changed from non-final to final
 				this.addDelta(getElementType(this.type1), IDelta.CHANGED, IDelta.NON_FINAL_TO_FINAL, this.initialDescriptorRestrictions, typeAccess, typeAccess2, this.type1, this.type1.getName(), Util.getDescriptorName(type1));
 			}
@@ -1394,9 +1425,14 @@ public class ClassFileComparator {
 				if (!RestrictionModifiers.isReferenceRestriction(restrictions)) {
 					// no longer tagged as @noreference
 					// report a field addition
+					if (name.equals("handle") && this.type2.getName().contains("GC")) { //$NON-NLS-1$ //$NON-NLS-2$
+						System.out.println("[ClassFileComparator] getDeltaForField: '" + name + "' in " + this.type2.getName() //$NON-NLS-1$ //$NON-NLS-2$
+								+ " → referenceRestrictions=0x" + Integer.toHexString(referenceRestrictions) + " (isNoreference=true in baseline)" //$NON-NLS-1$ //$NON-NLS-2$
+								+ " restrictions=0x" + Integer.toHexString(restrictions) + " (isNoreference=false in current → reports as ADDED FIELD!)" //$NON-NLS-1$ //$NON-NLS-2$
+								+ " component2.apiDesc resolved=" + (this.component2.hasApiDescription())); //$NON-NLS-1$
+					}
 					if (field2.isEnumConstant()) {
-						// report delta (addition of an enum constant -
-						// compatible
+						// report delta (addition of an enum constant - compatible
 						this.addDelta(getElementType(this.type2), IDelta.ADDED, IDelta.ENUM_CONSTANT, this.currentDescriptorRestrictions, access, access2, this.type1, name, new String[] {
 								Util.getDescriptorName(this.type2), name });
 					} else {
@@ -2146,6 +2182,15 @@ public class ClassFileComparator {
 		int access = field.getModifiers();
 		String name = field.getName();
 
+		if (name.equals("handle") && type.getName().contains("GC")) { //$NON-NLS-1$ //$NON-NLS-2$
+			System.out.println("[ClassFileComparator] reportFieldAddition: field=" + name //$NON-NLS-1$
+					+ " type=" + type.getName() //$NON-NLS-1$
+					+ " this.type1=" + (this.type1 == null ? "null" : this.type1.getName()) //$NON-NLS-1$ //$NON-NLS-2$
+					+ " this.type2=" + (this.type2 == null ? "null" : this.type2.getName()) //$NON-NLS-1$ //$NON-NLS-2$
+					+ " component=" + this.component.getSymbolicName() //$NON-NLS-1$
+					+ " component2=" + this.component2.getSymbolicName() + "  " + //$NON-NLS-1$ //$NON-NLS-2$
+					new RuntimeException("stacktrace")); //$NON-NLS-1$
+		}
 		if (Flags.isSynthetic(access)) {
 			// we ignore synthetic fields
 			return;
@@ -2161,6 +2206,12 @@ public class ClassFileComparator {
 			}
 			if (apiDescription != null) {
 				IApiAnnotations apiAnnotations = apiDescription.resolveAnnotations(field.getHandle());
+				if (name.equals("handle") && type.getName().contains("GC")) { //$NON-NLS-1$ //$NON-NLS-2$
+					System.out.println("[ClassFileComparator]   resolveAnnotations for field=" + name //$NON-NLS-1$
+							+ " → " + (apiAnnotations == null ? "null (no @noreference found!)" //$NON-NLS-1$ //$NON-NLS-2$
+									: "restrictions=0x" + Integer.toHexString(apiAnnotations.getRestrictions()) //$NON-NLS-1$
+											+ " isReferenceRestriction=" + RestrictionModifiers.isReferenceRestriction(apiAnnotations.getRestrictions()))); //$NON-NLS-1$
+				}
 				if (apiAnnotations != null) {
 					int restrictions = apiAnnotations.getRestrictions();
 					if (RestrictionModifiers.isReferenceRestriction(restrictions)) {
@@ -2176,6 +2227,10 @@ public class ClassFileComparator {
 					Util.getDescriptorName(type), name });
 		} else {
 			if (!(this.visibilityModifiers == VisibilityModifiers.API && component.hasApiDescription()) || Flags.isPublic(access) || Flags.isProtected(access)) {
+				if (name.equals("handle") || type.getName().contains("GC")) { //$NON-NLS-1$ //$NON-NLS-2$
+					System.out.println("[ClassFileComparator]   → reporting ADDED FIELD delta for " + name //$NON-NLS-1$
+							+ " currentDescriptorRestrictions=0x" + Integer.toHexString(this.currentDescriptorRestrictions)); //$NON-NLS-1$
+				}
 				// report non-API delta:
 				this.addDelta(getElementType(type), IDelta.ADDED, IDelta.FIELD, this.currentDescriptorRestrictions, this.initialDescriptorRestrictions, 0, access, this.type1, name, new String[] {
 						Util.getDescriptorName(type), name });

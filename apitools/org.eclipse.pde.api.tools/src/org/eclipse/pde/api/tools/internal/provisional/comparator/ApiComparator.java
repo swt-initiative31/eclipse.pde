@@ -383,6 +383,20 @@ public class ApiComparator {
 			}
 			localmonitor.split(1);
 			IApiType typeDescriptor = typeRoot.getStructure();
+			if (typeName.equals("org.eclipse.swt.graphics.GC")) { //$NON-NLS-1$
+				StringBuilder f1 = new StringBuilder();
+				for (org.eclipse.pde.api.tools.internal.provisional.model.IApiField f : typeDescriptor.getFields()) { f1.append(f.getName()).append(','); }
+				StringBuilder f2 = new StringBuilder();
+				for (org.eclipse.pde.api.tools.internal.provisional.model.IApiField f : typeDescriptor2.getFields()) { f2.append(f.getName()).append(','); }
+				System.out.println("[ApiComparator] compare(typeRoot2): typeName=" + typeName //$NON-NLS-1$
+						+ " visibility=0x" + Integer.toHexString(visibility) //$NON-NLS-1$
+						+ " (elementDescription2=" + (elementDescription2 == null ? "null" : "ok") + ")" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+						+ " refVisibility=0x" + Integer.toHexString(refVisibility) //$NON-NLS-1$
+						+ " (refElementDescription=" + (refElementDescription == null ? "null" : "ok") + ")" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+						+ " visibilityModifiers=0x" + Integer.toHexString(visibilityModifiers) //$NON-NLS-1$
+						+ " type1.fields=[" + f1 + "]" //$NON-NLS-1$ //$NON-NLS-2$
+						+ " type2.fields=[" + f2 + "]"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
 			if ((visibility & visibilityModifiers) == 0) {
 				if ((refVisibility & visibilityModifiers) == 0) {
 					// no delta
@@ -638,6 +652,15 @@ public class ApiComparator {
 								} else {
 									// Annotation is missing, not an API?
 									visibility = 0;
+								}
+								if (typeName.equals("org.eclipse.swt.graphics.GC")) { //$NON-NLS-1$
+									System.out.println("[ApiComparator] internalCompare loop1: typeName=" + typeName //$NON-NLS-1$
+											+ " elementDescription=" + (elementDescription == null ? "null" : "visibility=0x" + Integer.toHexString(elementDescription.getVisibility())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+											+ " visibility=0x" + Integer.toHexString(visibility) //$NON-NLS-1$
+											+ " visibilityModifiers=0x" + Integer.toHexString(visibilityModifiers) //$NON-NLS-1$
+											+ " visibilityMatch=" + ((visibility & visibilityModifiers) != 0) //$NON-NLS-1$
+											+ " component=" + component.getSymbolicName() //$NON-NLS-1$
+											+ " component2=" + component2.getSymbolicName()); //$NON-NLS-1$
 								}
 								IApiTypeRoot typeRoot2 = component2.findTypeRoot(typeName, id);
 								IApiComponent provider = null;
@@ -895,6 +918,11 @@ public class ApiComparator {
 								if (typeRootBaseLineNames.contains(typeName)) {
 									// already processed
 									return;
+								}
+								if (typeName.equals("org.eclipse.swt.graphics.GC")) { //$NON-NLS-1$
+									System.out.println("[ApiComparator] internalCompare loop2 (NEW TYPE): typeName=" + typeName //$NON-NLS-1$
+											+ " → GC is NOT in typeRootBaseLineNames, reported as ADDED TYPE" //$NON-NLS-1$
+											+ " elementDescription=" + (elementDescription == null ? "null" : "visibility=0x" + Integer.toHexString(elementDescription.getVisibility()))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 								}
 								typeRootBaseLineNames.add(typeName);
 								String deltaComponentID = Util.getDeltaComponentVersionsId(component2);

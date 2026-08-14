@@ -436,12 +436,28 @@ public class DeltaProcessor {
 				int newModifiers = delta.getNewModifiers();
 				switch (delta.getFlags()) {
 					case IDelta.FIELD:
-						if (RestrictionModifiers.isReferenceRestriction(delta.getCurrentRestrictions())) {
+						int restrictions = delta.getCurrentRestrictions();
+						boolean isRef = RestrictionModifiers.isReferenceRestriction(restrictions);
+						boolean isExtend = RestrictionModifiers.isExtendRestriction(restrictions);
+						boolean isVisible = Util.isVisible(newModifiers);
+						System.out.println("[DeltaProcessor] isClassCompatible ADDED FIELD:" //$NON-NLS-1$
+								+ " typeName=" + delta.getTypeName() //$NON-NLS-1$
+								+ " key=" + delta.getKey() //$NON-NLS-1$
+								+ " restrictions=0x" + Integer.toHexString(restrictions) //$NON-NLS-1$
+								+ " isReferenceRestriction=" + isRef //$NON-NLS-1$
+								+ " isExtendRestriction=" + isExtend //$NON-NLS-1$
+								+ " isVisible=" + isVisible //$NON-NLS-1$
+								+ " newModifiers=0x" + Integer.toHexString(newModifiers)); //$NON-NLS-1$
+						if (isRef) {
+							System.out.println("[DeltaProcessor]   → compatible (isReferenceRestriction=true)"); //$NON-NLS-1$
 							return true;
 						}
-						if (Util.isVisible(newModifiers)) {
-							return RestrictionModifiers.isExtendRestriction(delta.getCurrentRestrictions());
+						if (isVisible) {
+							System.out.println("[DeltaProcessor]   → compatible=" + isExtend //$NON-NLS-1$
+									+ " (isVisible=true, depends on isExtendRestriction)"); //$NON-NLS-1$
+							return isExtend;
 						}
+						System.out.println("[DeltaProcessor]   → compatible (not visible)"); //$NON-NLS-1$
 						return true;
 					case IDelta.METHOD:
 						if (Util.isVisible(newModifiers)) {

@@ -29,9 +29,9 @@ import org.junit.Test;
  * {@code @noreference} handle field:
  *
  * <ul>
- *   <li>test100: final GC + handle → final GC + handle (no modifier change)</li>
- *   <li>test101: final GC + handle → sealed GC + handle + GCExtension</li>
- *   <li>test102: final GC + handle → normal GC + handle + GCExtension</li>
+ *   <li>test900: final GC + handle → final GC + handle (no modifier change)</li>
+ *   <li>test901: final GC + handle → sealed GC + handle + GCExtension</li>
+ *   <li>test902: final GC + handle → normal GC + handle + GCExtension</li>
  * </ul>
  *
  * All tests compile with Java 17.
@@ -41,7 +41,7 @@ public class ClassDeltaSealedTests extends DeltaTestSetup {
 
 	@Override
 	public String getTestRoot() {
-		return "class"; //$NON-NLS-1$
+		return "class_sealed"; //$NON-NLS-1$
 	}
 
 	@Override
@@ -53,8 +53,8 @@ public class ClassDeltaSealedTests extends DeltaTestSetup {
 	 * Scenario 1: final GC + handle → final GC + handle (no modifier change).
 	 */
 	@Test
-	public void test100() {
-		observeDeltas("test100"); //$NON-NLS-1$
+	public void test900() {
+		observeDeltas("test900"); //$NON-NLS-1$
 		fail("show"); //$NON-NLS-1$
 	}
 
@@ -62,8 +62,8 @@ public class ClassDeltaSealedTests extends DeltaTestSetup {
 	 * Scenario 2: final GC + handle → sealed GC + handle + GCExtension.
 	 */
 	@Test
-	public void test101() {
-		observeDeltas("test101"); //$NON-NLS-1$
+	public void test901() {
+		observeDeltas("test901"); //$NON-NLS-1$
 		fail("show"); //$NON-NLS-1$
 	}
 
@@ -71,8 +71,8 @@ public class ClassDeltaSealedTests extends DeltaTestSetup {
 	 * Scenario 3: final GC + handle → normal GC + handle + GCExtension.
 	 */
 	@Test
-	public void test102() {
-		observeDeltas("test102"); //$NON-NLS-1$
+	public void test902() {
+		observeDeltas("test902"); //$NON-NLS-1$
 		fail("show"); //$NON-NLS-1$
 
 	}

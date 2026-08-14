@@ -377,6 +377,15 @@ public class APIFileGenerator {
 				if ("JavaSE-1.8".equals(eename)) { //$NON-NLS-1$
 					return JavaCore.VERSION_1_8;
 				}
+				// JavaSE-9 and later: extract version number from "JavaSE-X"
+				if (eename.startsWith("JavaSE-")) { //$NON-NLS-1$
+					String version = eename.substring("JavaSE-".length()); //$NON-NLS-1$
+					if (JavaCore.getAllVersions().contains(version)) {
+						return version;
+					}
+					ApiPlugin.logErrorMessage("APIFileGenerator: unknown execution environment '" + eename //$NON-NLS-1$
+							+ "', falling back to compliance " + JavaCore.VERSION_1_3); //$NON-NLS-1$
+				}
 			}
 		}
 		return JavaCore.VERSION_1_3;
